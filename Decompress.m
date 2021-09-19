@@ -1,4 +1,4 @@
-function [ptpath]=Decompress(Conditions,bulk,Closed,H2O,CO2)
+function [ptpath]=Decompress(Conditions,bulk,Closed,Thermal,H2O,CO2)
 % Magma decompression model to simulate volatile changes during isentropic
 % magma ascent. This code uses rhyoliteMELTS v1.2.0 (Gualda and Ghiorso,
 % 2015). Please ensure that you have added the relevant alphaMELTS for
@@ -10,6 +10,8 @@ function [ptpath]=Decompress(Conditions,bulk,Closed,H2O,CO2)
 %           'Bulk' (19-by-1 vector with initial liquid composition)
 %           'Closed' (true or false, if true simulated closed system
 %           degassing)
+%           'Thermal' (interger - 1 or 2, if 1 use isothermal constraints, 
+%           if 2, use isenthalpic constraints)
 %   Optional Inputs:
 %           'H2O' (set H2O content of initial liquid if not present in bulk)
 %           'CO2' (set CO2 content of initial liquid if not present in bulk)
@@ -23,7 +25,7 @@ function [ptpath]=Decompress(Conditions,bulk,Closed,H2O,CO2)
     
     FPbar=Conditions(2)*10; % convert from MPa to bars, final pressure
     
-    if nargin>3
+    if nargin>4
         bulk(15)=H2O;
     else
         H2O=bulk(15);
@@ -45,7 +47,7 @@ function [ptpath]=Decompress(Conditions,bulk,Closed,H2O,CO2)
         ptpath.engine.setSystemProperties("Mode", "Fractionate Fluids");
     end
     
-    ptpath.engine.setSystemProperties("Mode", "Isentropic");
+    %ptpath.engine.setSystemProperties("Mode", "Isentropic");
     
     ptpath.engine.findLiquidus;
     
@@ -64,6 +66,6 @@ function [ptpath]=Decompress(Conditions,bulk,Closed,H2O,CO2)
         if ptpath.engine.pressure<10*FPbar
             ptpath.engine.pressure = ptpath.engine.pressure - 0.1;
         end 
-        ptpath.engine.calcEquilibriumState(2, 0);       
+        ptpath.engine.calcEquilibriumState(Thermal, 1);       
     end
 end
